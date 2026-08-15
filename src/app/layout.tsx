@@ -35,9 +35,45 @@ export const metadata: Metadata = {
     "A strength and conditioning club built around coaching, not machines. Small-group classes, elite trainers, and a membership that adapts to you.",
   keywords: ["gym", "strength training", "personal trainer", "fitness club", "membership"],
   openGraph: {
-    title: "Ember Athletic Club",
-    description: "Strength, forged warm. Coaching-led training in the heart of the city.",
+    title: "Ember Athletic Club — Make the best version of you",
+    description:
+      "Coaching-led strength & conditioning in Bandra West and Indiranagar. Small groups capped at 8–24, four full-time coaches, memberships from ₹1,990 a month.",
+    url: "/",
+    siteName: "Ember Athletic Club",
+    locale: "en_IN",
     type: "website",
+    images: [
+      {
+        // Regenerate from /og-image — see src/app/og-image/page.tsx
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Ember Athletic Club — make the best version of you, with us. Eat, sleep, lift, repeat.",
+        type: "image/png",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ember Athletic Club — Make the best version of you",
+    description:
+      "Coaching-led strength & conditioning. Small groups, four full-time coaches, memberships from ₹1,990 a month.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Ember Athletic Club — make the best version of you, with us.",
+      },
+    ],
+  },
+  appleWebApp: {
+    title: "Ember Athletic Club",
+    statusBarStyle: "black-translucent",
+    capable: true,
+  },
+  other: {
+    "msapplication-TileColor": "#e4572e",
   },
 };
 
