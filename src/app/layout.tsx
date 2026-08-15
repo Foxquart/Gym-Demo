@@ -25,8 +25,32 @@ const accent = Instrument_Serif({
   display: "swap",
 });
 
+/**
+ * Absolute base for og:image and friends.
+ *
+ * Social crawlers do not resolve relative URLs, so this has to be the real
+ * origin the site is served from — a wrong value here produces a card with a
+ * broken image, which is exactly what a placeholder domain did.
+ *
+ * Order: explicit env var, then the Vercel-provided domains (production first,
+ * then the per-deployment URL so previews advertise themselves), then the
+ * current deployment as a last resort.
+ */
+function resolveSiteUrl(): string {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL;
+  if (explicit) return explicit.startsWith("http") ? explicit : `https://${explicit}`;
+
+  const vercelProd = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+  if (vercelProd) return `https://${vercelProd}`;
+
+  const vercelDeploy = process.env.VERCEL_URL;
+  if (vercelDeploy) return `https://${vercelDeploy}`;
+
+  return "https://gym-demo.foxquart.com";
+}
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://emberathletic.club"),
+  metadataBase: new URL(resolveSiteUrl()),
   title: {
     default: "Ember Athletic Club — Strength, forged warm",
     template: "%s · Ember Athletic Club",
