@@ -146,7 +146,7 @@ export function Hero({ stats }: { stats: HeroStats }) {
           <h1
             id="hero-title"
             ref={title}
-            className="js-reveal mt-5 text-display-xl leading-[0.86] font-extrabold tracking-[-0.045em] text-ink"
+            className="js-reveal mt-5 text-display-lg leading-[0.9] font-extrabold tracking-[-0.04em] text-ink"
           >
             Make the best
             <br />
