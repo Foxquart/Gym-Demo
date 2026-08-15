@@ -1,6 +1,9 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
+
 import { prisma } from "@/lib/prisma";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import type { IntensityKey } from "./intensity";
 
 const IST = "Asia/Kolkata";
@@ -40,7 +43,7 @@ const dateFmt = new Intl.DateTimeFormat("en-IN", { timeZone: IST, day: "numeric"
 const keyFmt = new Intl.DateTimeFormat("en-CA", { timeZone: IST });
 
 /** Upcoming sessions, grouped into calendar days. */
-export async function getTimetable({ days = 3, take = 80 } = {}): Promise<TimetableDay[]> {
+async function getTimetableUncached({ days = 3, take = 80 } = {}): Promise<TimetableDay[]> {
   const sessions = await prisma.classSession.findMany({
     where: { startsAt: { gte: new Date() } },
     orderBy: { startsAt: "asc" },
@@ -83,7 +86,7 @@ export async function getTimetable({ days = 3, take = 80 } = {}): Promise<Timeta
   return [...grouped.values()];
 }
 
-export async function getTrainers() {
+async function getTrainersUncached() {
   return prisma.trainer.findMany({
     where: { active: true },
     orderBy: { createdAt: "asc" },
@@ -100,7 +103,7 @@ export async function getTrainers() {
   });
 }
 
-export async function getMonthlyPlans() {
+async function getMonthlyPlansUncached() {
   return prisma.plan.findMany({
     where: { active: true, internal: false, interval: "MONTHLY" },
     orderBy: { sortOrder: "asc" },
@@ -117,7 +120,7 @@ export async function getMonthlyPlans() {
   });
 }
 
-export async function getAllPlans() {
+async function getAllPlansUncached() {
   return prisma.plan.findMany({
     where: { active: true, internal: false },
     orderBy: { sortOrder: "asc" },
@@ -134,7 +137,7 @@ export async function getAllPlans() {
   });
 }
 
-export async function getTestimonials() {
+async function getTestimonialsUncached() {
   return prisma.testimonial.findMany({
     where: { published: true },
     orderBy: { createdAt: "asc" },
@@ -152,7 +155,7 @@ export type ClubStats = {
 };
 
 /** Everything on the numbers strip is a real query — nothing is padded. */
-export async function getClubStats(): Promise<ClubStats> {
+async function getClubStatsUncached(): Promise<ClubStats> {
   const now = new Date();
   const [volume, sessionsLogged, classesPerWeek, coaches] = await Promise.all([
     prisma.workoutLog.aggregate({ _sum: { volumeKg: true } }),
@@ -180,3 +183,46 @@ export async function getClubStats(): Promise<ClubStats> {
     avgRating: Math.round(avgRating * 10) / 10,
   };
 }
+
+
+/* ---------------------------------------------------------------------------
+   Cached reads.
+
+   Every marketing page renders dynamically (the header reads the session
+   cookie), so without this each request paid a fresh round trip to Postgres
+   for content that changes a few times a week. Wrapping the reads keeps the
+   pages dynamic while serving their data from cache; admin mutations call
+   revalidateTag() so an edit still shows up immediately.
+
+   Timetable carries the shortest life because spots-left moves with bookings.
+--------------------------------------------------------------------------- */
+
+export const getTimetable = unstable_cache(getTimetableUncached, ["landing:timetable"], {
+  tags: [CACHE_TAGS.classes],
+  revalidate: 60,
+});
+
+export const getTrainers = unstable_cache(getTrainersUncached, ["landing:trainers"], {
+  tags: [CACHE_TAGS.trainers],
+  revalidate: 300,
+});
+
+export const getMonthlyPlans = unstable_cache(getMonthlyPlansUncached, ["landing:plans:monthly"], {
+  tags: [CACHE_TAGS.plans],
+  revalidate: 300,
+});
+
+export const getAllPlans = unstable_cache(getAllPlansUncached, ["landing:plans:all"], {
+  tags: [CACHE_TAGS.plans],
+  revalidate: 300,
+});
+
+export const getTestimonials = unstable_cache(getTestimonialsUncached, ["landing:testimonials"], {
+  tags: [CACHE_TAGS.testimonials],
+  revalidate: 300,
+});
+
+export const getClubStats = unstable_cache(getClubStatsUncached, ["landing:stats"], {
+  tags: [CACHE_TAGS.stats],
+  revalidate: 300,
+});

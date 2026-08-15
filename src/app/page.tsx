@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { MarketingShell } from "@/components/site/marketing-shell";
+import { IntroLoader } from "@/components/site/intro-loader";
 import { ClassesPreview } from "@/components/landing/classes-preview";
 import { ClosingCta } from "@/components/landing/closing-cta";
 import { Hero } from "@/components/landing/hero";
@@ -70,6 +71,7 @@ export default async function HomePage() {
 
   return (
     <MarketingShell>
+      <IntroLoader />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

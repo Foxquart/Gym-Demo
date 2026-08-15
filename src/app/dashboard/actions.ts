@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import { requireUser } from "@/lib/auth";
 import { formatDate } from "@/lib/utils";
 
@@ -10,6 +11,8 @@ import { formatDate } from "@/lib/utils";
 export type ActionResult = { ok: boolean; message: string };
 
 function revalidateMemberArea() {
+  // Booking changes move spots-left, which the cached landing timetable shows.
+  revalidateTag(CACHE_TAGS.classes);
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/classes");
   revalidatePath("/dashboard/bookings");

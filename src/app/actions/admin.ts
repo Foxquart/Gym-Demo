@@ -10,11 +10,12 @@
  *   3. `revalidatePath()` whatever the change can be seen from.
  */
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 /* -------------------------------------------------------------------------- */
 /*                              Shared action shape                            */
@@ -63,6 +64,11 @@ const ADMIN_PATHS = [
 
 function revalidateAdmin(...extra: string[]) {
   for (const path of [...ADMIN_PATHS, ...extra]) revalidatePath(path);
+  // The marketing pages read through unstable_cache, so a path revalidation
+  // alone would leave them serving stale plans/trainers/classes. Admin writes
+  // are rare enough that busting every tag is cheaper than getting the
+  // per-action tag mapping subtly wrong.
+  for (const tag of Object.values(CACHE_TAGS)) revalidateTag(tag);
 }
 
 /* -------------------------------------------------------------------------- */

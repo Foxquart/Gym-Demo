@@ -6,6 +6,7 @@ import { ArrowDown, Star } from "lucide-react";
 
 import { ButtonLink } from "@/components/ui/button";
 import { gsap, useGSAP, SplitText, MQ } from "@/lib/gsap";
+import { introDone } from "@/lib/intro-gate";
 import { useLenis } from "@/hooks/use-lenis";
 import { HERO_PHOTO } from "./media";
 
@@ -47,6 +48,17 @@ export function Hero({ stats }: { stats: HeroStats }) {
         mm.add(MQ.motionOk, () => {
           split = SplitText.create(heading, { type: "lines,words,chars", mask: "lines" });
 
+          // Each masked line is an overflow:clip box sized to the line height.
+          // At leading 0.86 the descender of "g" in "forged" falls outside it
+          // and gets sliced, so pad the mask and pull the same amount back off
+          // the margin — room for the tail, identical layout.
+          split.lines.forEach((line) => {
+            const mask = line.parentElement;
+            if (!mask) return;
+            mask.style.paddingBottom = "0.18em";
+            mask.style.marginBottom = "-0.18em";
+          });
+
           const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
           tl.set(heading, { opacity: 1 })
             .from(split.chars, {
@@ -73,7 +85,14 @@ export function Hero({ stats }: { stats: HeroStats }) {
       // and produce the wrong line breaks. Race a timeout so a stalled font
       // request can never leave the headline invisible.
       const fontsReady = document.fonts?.ready ?? Promise.resolve();
-      Promise.race([fontsReady, new Promise((r) => setTimeout(r, 1200))]).then(build, build);
+      // Two gates, not one: the font must have landed (so SplitText measures
+      // real glyphs) AND the intro overlay must be lifting, or the headline
+      // would burn its stagger behind a full-screen cover. `introDone` has its
+      // own failsafe, so a missing overlay cannot strand the hero.
+      Promise.all([
+        Promise.race([fontsReady, new Promise((r) => setTimeout(r, 1200))]),
+        introDone,
+      ]).then(build, build);
 
       /* ---- scroll: layered parallax, transforms only ---- */
       mm.add(MQ.motionOk, () => {
@@ -129,9 +148,15 @@ export function Hero({ stats }: { stats: HeroStats }) {
             ref={title}
             className="js-reveal mt-5 text-display-xl leading-[0.86] font-extrabold tracking-[-0.045em] text-ink"
           >
-            Strength,
+            Make the best
             <br />
-            forged <span className="text-gradient-ember">warm</span>.
+            version of you,
+            <br />
+            {/* Solid brand, not `.text-gradient-ember`: that utility needs
+                background-clip:text, and SplitText relocates the letters into
+                its own wrappers, leaving this span with no text to clip to.
+                The word rendered invisible and only the full stop survived. */}
+            with <span className="text-brand">us</span>.
           </h1>
 
           <p className="js-hero-fade mt-7 max-w-xl text-base leading-relaxed text-ink-muted sm:text-lg">
