@@ -1,26 +1,288 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   EMBER ATHLETIC CLUB — Design tokens
+   A warm palette: ember orange, clay, amber and sand neutrals.
+   Every token is defined in light first, then overridden for dark.
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Surfaces */
+  --bg: #fdf8f3;
+  --bg-subtle: #f7ede2;
+  --surface: #fffdfb;
+  --surface-raised: #ffffff;
+  --overlay: rgba(28, 20, 16, 0.42);
+
+  /* Ink */
+  --ink: #1c1410;
+  --ink-muted: #6d5a4d;
+  --ink-faint: #9b8878;
+
+  /* Brand — ember */
+  --brand: #e4572e;
+  --brand-hover: #cf4720;
+  --brand-soft: #fbe6dc;
+  --brand-ink: #ffffff;
+
+  /* Accents */
+  --amber: #e0912f;
+  --clay: #8c3b1a;
+  --sage: #6b7f5e;
+  --danger: #c0392b;
+  --success: #4f7a45;
+
+  /* Lines */
+  --border: #e8d8c6;
+  --border-strong: #d5bfa8;
+  --ring: rgba(228, 87, 46, 0.45);
+
+  /* Elevation — warm-tinted shadows never read as grey */
+  --shadow-sm: 0 1px 2px rgba(72, 42, 24, 0.06), 0 1px 3px rgba(72, 42, 24, 0.05);
+  --shadow-md: 0 4px 12px rgba(72, 42, 24, 0.08), 0 2px 4px rgba(72, 42, 24, 0.05);
+  --shadow-lg: 0 18px 40px -12px rgba(72, 42, 24, 0.2), 0 4px 12px rgba(72, 42, 24, 0.07);
+  --shadow-glow: 0 12px 40px -8px rgba(228, 87, 46, 0.35);
+
+  /* Grain overlay strength */
+  --grain-opacity: 0.035;
+
+  color-scheme: light;
+}
+
+.dark {
+  --bg: #14100d;
+  --bg-subtle: #1a1512;
+  --surface: #1e1814;
+  --surface-raised: #26201a;
+  --overlay: rgba(8, 5, 3, 0.66);
+
+  --ink: #f6ede3;
+  --ink-muted: #b09c8c;
+  --ink-faint: #8a7767;
+
+  --brand: #ff7a45;
+  --brand-hover: #ff9366;
+  --brand-soft: #3a2018;
+  --brand-ink: #1a0e08;
+
+  --amber: #f5b455;
+  --clay: #d4744a;
+  --sage: #91a883;
+  --danger: #e4695c;
+  --success: #7bb06c;
+
+  --border: #33291f;
+  --border-strong: #4a3a2c;
+  --ring: rgba(255, 122, 69, 0.5);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 18px 40px -12px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 12px 44px -8px rgba(255, 122, 69, 0.4);
+
+  --grain-opacity: 0.055;
+
+  color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+  --color-amber: var(--amber);
+  --color-clay: var(--clay);
+  --color-sage: var(--sage);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-accent), ui-serif, Georgia, serif;
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-glow: var(--shadow-glow);
+
+  --radius-card: 20px;
+  --radius-pill: 999px;
+
+  /* Fluid display sizes — clamp() so laptops get full-bleed scale
+     while phones stay readable without a media query. */
+  --text-display-xl: clamp(3rem, 11vw, 11rem);
+  --text-display-lg: clamp(2.5rem, 7.5vw, 7rem);
+  --text-display-md: clamp(2rem, 5vw, 4rem);
+  --text-display-sm: clamp(1.6rem, 3.4vw, 2.75rem);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Lenis drives scrolling on the marketing pages; native smooth scroll
+     would fight it. App routes fall back to native anchors. */
+  html:not(.lenis) {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: var(--brand);
+    color: var(--brand-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* Warm scrollbar so the chrome matches the palette in both themes */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg-subtle);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 999px;
+    border: 2px solid var(--bg-subtle);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--brand);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer utilities {
+  .text-display-xl {
+    font-size: var(--text-display-xl);
+  }
+  .text-display-lg {
+    font-size: var(--text-display-lg);
+  }
+  .text-display-md {
+    font-size: var(--text-display-md);
+  }
+  .text-display-sm {
+    font-size: var(--text-display-sm);
+  }
+
+  /* Page gutter. Full-bleed on desktop (the brief asks for full page width),
+     comfortable thumb-safe padding on phones. */
+  .container-edge {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 4.5rem);
+  }
+
+  .container-read {
+    width: 100%;
+    max-width: 78rem;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .text-gradient-ember {
+    background: linear-gradient(100deg, var(--brand) 0%, var(--amber) 55%, var(--clay) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .surface-card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+  }
+
+  .glass {
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  /* Film grain — the single texture that ties the whole site together */
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .hide-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Elements animated in by GSAP start hidden, but only when JS can run —
+     without this guard a failed script would leave a blank page. */
+  .js-reveal {
+    opacity: 0;
+  }
+}
+
+/* Respect the OS setting: kill transforms, keep content visible. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .js-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

@@ -1,0 +1,231 @@
+// Ember Athletic Club — data model
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum BillingInterval {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  CREATED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum BookingStatus {
+  BOOKED
+  CANCELLED
+  ATTENDED
+}
+
+enum Intensity {
+  LOW
+  MODERATE
+  HIGH
+  ELITE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         Role     @default(USER)
+  avatarUrl    String?
+  goal         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  subscriptions Subscription[]
+  payments      Payment[]
+  bookings      Booking[]
+  checkIns      CheckIn[]
+  workouts      WorkoutLog[]
+
+  @@index([role])
+}
+
+model Plan {
+  id           String          @id @default(cuid())
+  slug         String          @unique
+  name         String
+  tagline      String
+  // Stored in the smallest currency unit (paise) to avoid float math.
+  priceInPaise Int
+  interval     BillingInterval @default(MONTHLY)
+  features     String[]
+  highlight    Boolean         @default(false)
+  active       Boolean         @default(true)
+  /// Internal plans are purchasable by direct link but never advertised —
+  /// used for the ₹1 live-payment smoke test.
+  internal     Boolean         @default(false)
+  sortOrder    Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  subscriptions Subscription[]
+  payments      Payment[]
+
+  @@index([active, sortOrder])
+}
+
+model Subscription {
+  id        String             @id @default(cuid())
+  userId    String
+  planId    String
+  status    SubscriptionStatus @default(PENDING)
+  startsAt  DateTime           @default(now())
+  endsAt    DateTime
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan     Plan      @relation(fields: [planId], references: [id])
+  payments Payment[]
+
+  @@index([userId, status])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  userId            String
+  planId            String?
+  subscriptionId    String?
+  amountInPaise     Int
+  currency          String        @default("INR")
+  status            PaymentStatus @default(CREATED)
+  razorpayOrderId   String        @unique
+  razorpayPaymentId String?
+  razorpaySignature String?
+  method            String?
+  failureReason     String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan         Plan?         @relation(fields: [planId], references: [id])
+  subscription Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model Trainer {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  specialty       String
+  bio             String
+  imageUrl        String
+  experienceYears Int      @default(1)
+  rating          Float    @default(5)
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  classes ClassSession[]
+}
+
+model ClassSession {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  trainerId   String
+  startsAt    DateTime
+  durationMin Int       @default(60)
+  capacity    Int       @default(20)
+  intensity   Intensity @default(MODERATE)
+  imageUrl    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  trainer  Trainer   @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@index([startsAt])
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  userId         String
+  classSessionId String
+  status         BookingStatus @default(BOOKED)
+  createdAt      DateTime      @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  classSession ClassSession @relation(fields: [classSessionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, classSessionId])
+  @@index([userId])
+}
+
+model CheckIn {
+  id     String   @id @default(cuid())
+  userId String
+  at     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, at])
+}
+
+model WorkoutLog {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime
+  type        String
+  durationMin Int
+  calories    Int
+  volumeKg    Int      @default(0)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String
+  quote     String
+  rating    Int      @default(5)
+  imageUrl  String?
+  published Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Lead {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  message   String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([handled, createdAt])
+}

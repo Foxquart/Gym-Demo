@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: gym-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gym
+      POSTGRES_PASSWORD: gympass
+      POSTGRES_DB: gymdb
+    # 5455 on the host: 5432 and 5433 are commonly already taken by other
+    # local projects. Keep this in sync with DATABASE_URL in .env.
+    ports:
+      - "5455:5432"
+    volumes:
+      - gym-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gym -d gymdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  gym-pgdata:
