@@ -97,7 +97,7 @@ export function AdminShell({
           </div>
         </header>
 
-        <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-6">{children}</main>
+        <main className="min-w-0 flex-1 px-4 py-5 sm:px-6 sm:py-6 page-enter">{children}</main>
       </div>
     </div>
   );

@@ -92,9 +92,9 @@ export default function OgImagePage() {
           <div className="flex items-center gap-5 font-mono text-[15px] tracking-[0.3em] text-ink-faint uppercase">
             <span>Eat</span>
             <span className="text-border-strong">·</span>
-            <span>Sleep</span>
-            <span className="text-border-strong">·</span>
             <span className="text-brand">Lift</span>
+            <span className="text-border-strong">·</span>
+            <span>Sleep</span>
             <span className="text-border-strong">·</span>
             <span>Repeat</span>
           </div>

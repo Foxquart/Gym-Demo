@@ -32,7 +32,7 @@ import { markIntroDone } from "@/lib/intro-gate";
  */
 
 /** Swap "LIFT" for "GYM" here if you prefer the literal mantra. */
-const WORDS = ["EAT", "SLEEP", "LIFT", "REPEAT"] as const;
+const WORDS = ["EAT", "LIFT", "SLEEP", "REPEAT"] as const;
 
 /* Each word gets less room than the one before it: the loop tightening. */
 const BEATS = [0.3, 0.24, 0.2, 0.34];

@@ -269,6 +269,26 @@
     contain: strict;
   }
 
+  /* Skeleton -> content hand-off. The loading fallback and the page are
+     different elements, so each mount re-triggers this and the swap reads as a
+     settle rather than a hard cut. Neutralised by the reduced-motion block. */
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Applied to the shell's <main>. A Tailwind arbitrary variant cannot compose
+     a utility declared in this layer, so target the children directly. */
+  .page-enter > * {
+    animation: page-in 280ms var(--ease-out-expo) both;
+  }
+
   .hide-scrollbar {
     scrollbar-width: none;
     -ms-overflow-style: none;

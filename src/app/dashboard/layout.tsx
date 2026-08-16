@@ -35,7 +35,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
         <main
           id="member-main"
-          className="px-4 pt-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-8 lg:pt-9 lg:pb-16 xl:px-10 2xl:px-14"
+          className="px-4 pt-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:px-6 lg:px-8 lg:pt-9 lg:pb-16 xl:px-10 2xl:px-14 page-enter"
         >
           {children}
         </main>
