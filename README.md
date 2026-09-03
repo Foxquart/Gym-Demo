@@ -1,12 +1,14 @@
 # Ember Athletic Club
 
 A full-stack gym platform: an animation-led marketing site, a member dashboard, an admin portal,
-and a Razorpay checkout — one Next.js app, warm palette, light and dark throughout.
+and a Razorpay checkout in one Next.js app, warm palette, light and dark throughout.
 
-- **Landing** — GSAP + ScrollTrigger choreography, Lenis smooth scroll, full-bleed on desktop
-- **Member dashboard** — membership status, class booking, billing history, training log
-- **Admin portal** — members, plans, trainers, classes, payments and leads, with revenue analytics
-- **Payments** — Razorpay orders, signature verification, webhooks, and a keyless mock mode
+Live demo: https://gym-demo.foxquart.com/ (a [Foxquart](https://foxquart.com) demo build)
+
+- **Landing**: GSAP + ScrollTrigger choreography, Lenis smooth scroll, full-bleed on desktop
+- **Member dashboard**: membership status, class booking, billing history, training log
+- **Admin portal**: members, plans, trainers, classes, payments and leads, with revenue analytics
+- **Payments**: Razorpay orders, signature verification, webhooks, and a keyless mock mode
 
 ## Stack
 
@@ -23,8 +25,9 @@ and a Razorpay checkout — one Next.js app, warm palette, light and dark throug
 ## Getting started
 
 ```bash
-# 1. Database (Docker) — host port 5455
+# 1. Database (Docker), host port 5455
 docker compose up -d
+# .env.example points at port 5432; change it to 5455 if you use this compose file
 
 # 2. Environment
 cp .env.example .env      # then fill in AUTH_SECRET; Razorpay keys are optional
@@ -50,13 +53,14 @@ npm run dev               # http://localhost:3000
 | Variable | Required | Notes |
 | --- | --- | --- |
 | `DATABASE_URL` | yes | Postgres connection string |
-| `AUTH_SECRET` | yes | ≥32 chars — `openssl rand -hex 32` |
+| `AUTH_SECRET` | yes | 32+ chars, `openssl rand -hex 32` |
 | `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | no | Leave empty to run checkout in mock mode |
 | `RAZORPAY_WEBHOOK_SECRET` | no | Needed only for live webhook verification |
 | `NEXT_PUBLIC_RAZORPAY_KEY_ID` | no | Public key id for the Razorpay checkout modal |
+| `NEXT_PUBLIC_SITE_URL` | no | Public origin for absolute og:image and canonical URLs |
 
 With no Razorpay keys the checkout runs a local mock provider: it creates the same `Payment` rows,
-verifies a real HMAC signature, and activates the same `Subscription` — so the full flow is
+verifies a real HMAC signature, and activates the same `Subscription`, so the full flow is
 demonstrable end to end. Drop in test keys and it switches to live with no code change.
 See [docs/payments.md](docs/payments.md).
 
@@ -78,8 +82,8 @@ npm run db:studio    # Prisma Studio
 
 ```
 prisma/
-  schema.prisma        12 models: users, plans, subscriptions, payments,
-  seed.ts              trainers, classes, bookings, check-ins, logs, leads
+  schema.prisma        11 models: users, plans, subscriptions, payments, trainers,
+  seed.ts              classes, bookings, check-ins, workout logs, testimonials, leads
 src/
   app/
     page.tsx           landing page
@@ -89,6 +93,9 @@ src/
     admin/             operator portal
     checkout/          plan chooser, order summary, success
     api/               payment endpoints + Razorpay webhook
+    og-image/          social card page
+    favicon.ico        Foxquart favicon
+    apple-icon.png     Foxquart touch icon
     actions/           server actions, grouped by domain
   components/
     ui/                shared primitives (Button, Card, Input, Badge, …)
@@ -97,13 +104,13 @@ src/
     dashboard/         member-area components
     admin/             operator components
     checkout/          payment components
-  lib/                 prisma, auth, auth-edge, razorpay, gsap, utils
+  lib/                 prisma, auth, auth-edge, razorpay, gsap, cache-tags, intro-gate, utils
   middleware.ts        route guards for /dashboard, /admin, /checkout
 ```
 
 ## Design system
 
-Every colour, shadow and radius is a CSS variable declared in `src/app/globals.css` — light values
+Every colour, shadow and radius is a CSS variable declared in `src/app/globals.css`: light values
 on `:root`, dark values on `.dark`, exposed to Tailwind via `@theme inline`. Components reference
 tokens (`bg-surface`, `text-ink-muted`, `border-border`, `text-brand`), never raw hex and never
 Tailwind's default palette, so both themes stay correct by construction.
@@ -120,4 +127,10 @@ without a media query.
 Marketing sections run edge to edge on desktop via `.container-edge`; the dashboard and admin
 shells use the whole viewport with a fixed sidebar. On phones the sidebars become a bottom tab bar
 and a drawer, tables become stacked cards, and tap targets stay at 44px. `prefers-reduced-motion`
-is honoured globally — animated elements resolve to their final state instead of moving.
+is honoured globally; animated elements resolve to their final state instead of moving.
+
+## Branding
+
+This is a Foxquart demo build, live at https://gym-demo.foxquart.com/.
+The favicon and touch icon are the Foxquart set, placed as Next.js file conventions at
+`src/app/favicon.ico` and `src/app/apple-icon.png`.
